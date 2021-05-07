@@ -498,8 +498,20 @@ module CarrierWave
         def copy_options
           options = {}
           options.merge!(acl_header) if acl_header.present?
-          options['Content-Type'] ||= content_type if content_type
+          options.merge!(content_type_header) if content_type_header.present?
           options.merge(@uploader.fog_attributes)
+        end
+
+        def content_type_header
+          return {} unless content_type
+
+          if fog_provider == 'AWS'
+            { 'Content-Type' => content_type }
+          elsif fog_provider == "Google"
+            { content_type: content_type }
+          else
+            {}
+          end
         end
 
         def acl_header
